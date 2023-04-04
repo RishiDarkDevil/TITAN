@@ -1,7 +1,7 @@
 # Required Libraries
 
 # General
-from typing import List
+from typing import List, Tuple
 
 # Language Processing
 from transformers import CLIPTokenizer
@@ -57,33 +57,33 @@ def extract_lemma(doc):
   return parsed_text
 
 class PromptHandler:
-	"""
-	This class deals with all the Prompt Processing required for extracting objects for further use in the TITAN pipeline
-	"""
-
-	def __init__(
-		self, 
-		hf_diffusion_model_path: str = DIFFUSION_MODEL_PATH, 
-		hf_diffusion_model_subfolder:str = 'tokenizer',
-		tokenize_no_ssplit: bool = True, 
-		pos_batch_size: int = 6500, 
-		keep_pos_tags: List[str] = KEEP_POS_TAGS
-		):
-
-		# loads the CLIPTokenizer with the configuration same as that used in the Diffusion Model
-		# Using Stanza Tokenizer might generate different tokens compared to the CLIP, leading to misalignment in DAAM - Causing Error
-		self.tokenizer = CLIPTokenizer.from_pretrained(hf_diffusion_model_path, subfolder=hf_diffusion_model_subfolder)
-
-		# loads the text processing pipeline, pretokenized as CLIPTokenizer will do the tokenizer and need not be handled by stanza
-		self.nlp = stanza.Pipeline(lang='en', processors='tokenize,mwt,pos,lemma', tokenize_no_ssplit=tokenize_no_ssplit, tokenize_pretokenized=True, verbose=True, pos_batch_size=pos_batch_size)
-
-		self.keep_pos_tags = keep_pos_tags
-
-	def clean_prompt(self, sentences: List[str]) -> Tuple[List[List[str]], List[List[str]], List[List[str]]]:
+  """
+  This class deals with all the Prompt Processing required for extracting objects for further use in the TITAN pipeline
+  """
+  
+  def __init__(
+    self, 
+    hf_diffusion_model_path: str = DIFFUSION_MODEL_PATH, 
+    hf_diffusion_model_subfolder:str = 'tokenizer',
+    tokenize_no_ssplit: bool = True, 
+    pos_batch_size: int = 6500, 
+    keep_pos_tags: List[str] = KEEP_POS_TAGS
+    ):
+  
+    # loads the CLIPTokenizer with the configuration same as that used in the Diffusion Model
+    # Using Stanza Tokenizer might generate different tokens compared to the CLIP, leading to misalignment in DAAM - Causing Error
+    self.tokenizer = CLIPTokenizer.from_pretrained(hf_diffusion_model_path, subfolder=hf_diffusion_model_subfolder)
+    
+    # loads the text processing pipeline, pretokenized as CLIPTokenizer will do the tokenizer and need not be handled by stanza
+    self.nlp = stanza.Pipeline(lang='en', processors='tokenize,mwt,pos,lemma', tokenize_no_ssplit=tokenize_no_ssplit, tokenize_pretokenized=True, verbose=True, pos_batch_size=pos_batch_size)
+    
+    self.keep_pos_tags = keep_pos_tags
+    
+  def clean_prompt(self, sentences: List[str]) -> Tuple[List[List[str]], List[List[str]], List[List[str]]]:
     """
     Takes in a list of sentences i.e. prompts and returns a tuple of 3 lists which contains tokenized sentences, cleaned sentences, objects in sentences
     """
-
+    
     # convert the sentences to lower case and tokenizes the sentences to be passed onto Stanza for POS Tagging
     sentences_lc_tokenized = self.tokenizer.batch_decode([[word for word in sent[1:-1]] for sent in self.tokenizer(sentences)['input_ids'] if len(sent) <= self.tokenizer.model_max_length])
 
