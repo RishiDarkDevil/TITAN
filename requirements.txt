@@ -1,0 +1,4 @@
+nltk
+transformers
+stanza
+torch
