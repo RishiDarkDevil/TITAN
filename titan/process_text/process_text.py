@@ -20,6 +20,8 @@ stanza.download('en')
 # Model
 import torch
 
+__all__ = ['PromptHandler']
+
 # Diffusion Model which we use unless anything else specified
 DIFFUSION_MODEL_PATH = 'stabilityai/stable-diffusion-2-base'
 

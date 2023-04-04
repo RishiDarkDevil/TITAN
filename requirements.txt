@@ -1,4 +1,4 @@
-nltk
-transformers
-stanza
+nltk # for stopwords
+transformers # for CLIPTokenizer
+stanza # for stanford pos tagger
 torch
