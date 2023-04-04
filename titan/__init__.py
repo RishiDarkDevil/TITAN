@@ -1,1 +1,1 @@
-from .process_text.process_text import *
+from .process_text import *

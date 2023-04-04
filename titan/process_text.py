@@ -79,7 +79,7 @@ class PromptHandler:
 
 		self.keep_pos_tags = keep_pos_tags
 
-	def clean_prompt(self, sentences: List[str]) --> Tuple[List[List[str]], List[List[str]], List[List[str]]]:
+	def clean_prompt(self, sentences: List[str]) -> Tuple[List[List[str]], List[List[str]], List[List[str]]]:
     """
     Takes in a list of sentences i.e. prompts and returns a tuple of 3 lists which contains tokenized sentences, cleaned sentences, objects in sentences
     """
