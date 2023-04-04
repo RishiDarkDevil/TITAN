@@ -84,28 +84,28 @@ class PromptHandler:
     Takes in a list of sentences i.e. prompts and returns a tuple of 3 lists which contains tokenized sentences, cleaned sentences, objects in sentences
     """
 
-	  # convert the sentences to lower case and tokenizes the sentences to be passed onto Stanza for POS Tagging
-	  sentences_lc_tokenized = self.tokenizer.batch_decode([[word for word in sent[1:-1]] for sent in self.tokenizer(sentences)['input_ids'] if len(sent) <= self.tokenizer.model_max_length])
+    # convert the sentences to lower case and tokenizes the sentences to be passed onto Stanza for POS Tagging
+    sentences_lc_tokenized = self.tokenizer.batch_decode([[word for word in sent[1:-1]] for sent in self.tokenizer(sentences)['input_ids'] if len(sent) <= self.tokenizer.model_max_length])
 
-	  # stanza accepts only a single string instead of list of strings. So, we have set the tokenize_no_ssplit=True and have to join each sentence with double newline
-	  sentence_string = "\n\n".join(sentences_lc_tokenized)
+    # stanza accepts only a single string instead of list of strings. So, we have set the tokenize_no_ssplit=True and have to join each sentence with double newline
+    sentence_string = "\n\n".join(sentences_lc_tokenized)
 
-	  # tokenizes, lemmatizes and pos tags the prompt
-	  with torch.no_grad():
-	    processed_prompt = self.nlp(sentence_string)
-	  
-	  # extracts pos tags from the processed_prompt
-	  pos_tagged_prompt = extract_pos(processed_prompt)
-
-	  # lemmatized text
-	  lemmatized_prompt = extract_lemma(processed_prompt)
-
-	  del processed_prompt
-
-	  # keep only the noun words, removes stopwords
-	  fin_prompt = [[word for word, pos_tag in sent if word is not None and ((pos_tag in self.keep_pos_tags) and (word not in stpwords) and (word.isalpha()))] for sent in pos_tagged_prompt]
-	  obj_prompt = [[word_lemma[1] for word_pos, word_lemma in zip(sent_pos, sent_lemma) if (word_lemma[0] is not None and word_lemma[1] is not None) and ((word_pos[1] in self.keep_pos_tags) and ((word_lemma[0] not in stpwords) or (word_lemma[1] not in stpwords)) and word_lemma[0].isalpha() and word_lemma[1].isalpha())] for sent_pos, sent_lemma in zip(pos_tagged_prompt, lemmatized_prompt)]
-	  
-	  del pos_tagged_prompt, lemmatized_prompt
-	  
-	  return sentences_lc_tokenized, fin_prompt, obj_prompt
+    # tokenizes, lemmatizes and pos tags the prompt
+    with torch.no_grad():
+      processed_prompt = self.nlp(sentence_string)
+    
+    # extracts pos tags from the processed_prompt
+    pos_tagged_prompt = extract_pos(processed_prompt)
+    
+    # lemmatized text
+    lemmatized_prompt = extract_lemma(processed_prompt)
+    
+    del processed_prompt
+    
+    # keep only the noun words, removes stopwords
+    fin_prompt = [[word for word, pos_tag in sent if word is not None and ((pos_tag in self.keep_pos_tags) and (word not in stpwords) and (word.isalpha()))] for sent in pos_tagged_prompt]
+    obj_prompt = [[word_lemma[1] for word_pos, word_lemma in zip(sent_pos, sent_lemma) if (word_lemma[0] is not None and word_lemma[1] is not None) and ((word_pos[1] in self.keep_pos_tags) and ((word_lemma[0] not in stpwords) or (word_lemma[1] not in stpwords)) and word_lemma[0].isalpha() and word_lemma[1].isalpha())] for sent_pos, sent_lemma in zip(pos_tagged_prompt, lemmatized_prompt)]
+    
+    del pos_tagged_prompt, lemmatized_prompt
+    
+    return sentences_lc_tokenized, fin_prompt, obj_prompt
