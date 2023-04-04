@@ -1,1 +1,1 @@
-from .process_text import PromptHandler
+from .process_text import *
