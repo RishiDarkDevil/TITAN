@@ -8,14 +8,8 @@ from transformers import CLIPTokenizer
 from nltk.corpus import stopwords
 
 import nltk
-nltk.download('stopwords')
-nltk.download('wordnet')
-nltk.download('punkt')
-nltk.download('omw-1.4')
-nltk.download('averaged_perceptron_tagger')
 
 import stanza
-stanza.download('en')
 
 # Model
 import torch
@@ -28,10 +22,6 @@ DIFFUSION_MODEL_PATH = 'stabilityai/stable-diffusion-2-base'
 # treebank-specific POS (XPOS) tags to keep, other POS tagged tokens will not be retaineds
 # The POS tags to retain unless anything else specified
 KEEP_POS_TAGS = ['NN', 'NNS', 'NNP', 'NNPS']
-
-# Stopwords
-STOPWORDS = set(stopwords.words('english'))
-stpwords = STOPWORDS
 
 # Helper Functions for PromptHandler Class Below
 # extract parts of speech
@@ -73,10 +63,22 @@ class PromptHandler:
     # loads the CLIPTokenizer with the configuration same as that used in the Diffusion Model
     # Using Stanza Tokenizer might generate different tokens compared to the CLIP, leading to misalignment in DAAM - Causing Error
     self.tokenizer = CLIPTokenizer.from_pretrained(hf_diffusion_model_path, subfolder=hf_diffusion_model_subfolder)
-    
+
+    print('Loading the NLTK Stopwords...')
+    nltk.download('stopwords')
+
+    # Stopwords
+    STOPWORDS = set(stopwords.words('english'))
+    self.stpwords = STOPWORDS
+    print('Done!')
+
+    print('Loading the Stanza Model...')
+    # downloads the stanza model
+    stanza.download('en')
     # loads the text processing pipeline, pretokenized as CLIPTokenizer will do the tokenizer and need not be handled by stanza
     self.nlp = stanza.Pipeline(lang='en', processors='tokenize,mwt,pos,lemma', tokenize_no_ssplit=tokenize_no_ssplit, tokenize_pretokenized=True, verbose=True, pos_batch_size=pos_batch_size)
-    
+    print('Done!')
+
     self.keep_pos_tags = keep_pos_tags
     
   def clean_prompt(self, sentences: List[str]) -> Tuple[List[List[str]], List[List[str]], List[List[str]]]:
@@ -103,8 +105,8 @@ class PromptHandler:
     del processed_prompt
     
     # keep only the noun words, removes stopwords
-    fin_prompt = [[word for word, pos_tag in sent if word is not None and ((pos_tag in self.keep_pos_tags) and (word not in stpwords) and (word.isalpha()))] for sent in pos_tagged_prompt]
-    obj_prompt = [[word_lemma[1] for word_pos, word_lemma in zip(sent_pos, sent_lemma) if (word_lemma[0] is not None and word_lemma[1] is not None) and ((word_pos[1] in self.keep_pos_tags) and ((word_lemma[0] not in stpwords) or (word_lemma[1] not in stpwords)) and word_lemma[0].isalpha() and word_lemma[1].isalpha())] for sent_pos, sent_lemma in zip(pos_tagged_prompt, lemmatized_prompt)]
+    fin_prompt = [[word for word, pos_tag in sent if word is not None and ((pos_tag in self.keep_pos_tags) and (word not in self.stpwords) and (word.isalpha()))] for sent in pos_tagged_prompt]
+    obj_prompt = [[word_lemma[1] for word_pos, word_lemma in zip(sent_pos, sent_lemma) if (word_lemma[0] is not None and word_lemma[1] is not None) and ((word_pos[1] in self.keep_pos_tags) and ((word_lemma[0] not in self.stpwords) or (word_lemma[1] not in self.stpwords)) and word_lemma[0].isalpha() and word_lemma[1].isalpha())] for sent_pos, sent_lemma in zip(pos_tagged_prompt, lemmatized_prompt)]
     
     del pos_tagged_prompt, lemmatized_prompt
     
