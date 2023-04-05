@@ -87,7 +87,11 @@ class PromptHandler:
     """
     print('Tokenizing...', end='')
     # convert the sentences to lower case and tokenizes the sentences to be passed onto Stanza for POS Tagging
-    sentences_lc_tokenized = self.tokenizer.batch_decode([[word for word in sent[1:-1]] for sent in self.tokenizer(sentences)['input_ids'] if len(sent) <= self.tokenizer.model_max_length])
+    sentences_lc_tokenized = tokenizer.batch_decode(
+        [[word for word in sent] for sent in tokenizer(sentences)['input_ids'] if len(sent) <= tokenizer.model_max_length],
+        skip_special_tokens = True,
+        clean_up_tokenization_spaces = False
+        )
     print('Done')
 
     # stanza accepts only a single string instead of list of strings. So, we have set the tokenize_no_ssplit=True and have to join each sentence with double newline
