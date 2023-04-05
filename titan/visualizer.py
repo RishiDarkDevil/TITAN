@@ -13,6 +13,9 @@ from PIL import Image
 # Data Handling
 from pycocotools.coco import COCO
 
+# Matrix Manipulation
+import numpy as np
+
 # Visualization
 from ipywidgets import Output
 from ipywidgets import Button, HBox, VBox, Output
