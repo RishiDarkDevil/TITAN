@@ -38,7 +38,7 @@ class TITANViz(COCO):
 
 
   # Helper Utility to display only annotations of a particular object class
-  def _visualize_object_annotation(self, class_name, out, figsize = (20,10)):
+  def _visualize_object_annotation(self, class_name, anns, ann_names, im, out, figsize = (20,10)):
 
     # Set plot figure size
     plt.rcParams['figure.figsize'] = (10,10)
@@ -129,5 +129,5 @@ class TITANViz(COCO):
 
     # Add click functionality to buttons
     for item in items:
-      item.on_click(functools.partial(self._visualize_object_annotation, item.description, out))
+      item.on_click(functools.partial(self._visualize_object_annotation, item.description, anns, ann_names, im, out))
     display(out)
