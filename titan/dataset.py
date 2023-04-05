@@ -45,11 +45,23 @@ class TITANDataset:
     image_dir: It is the name of the subfolder within `root_dir` which contains the iamges
     annotation_dir: It is the name of the subfolder within `root_dir` which contaitns the annotations
     caption_dir: It is the name of the subfolder within `root_dir` which contains the captions
+    info: info dictionary of the dataset in COCO format
+    licenses: list of dictionaries of the dataset in COCO format
     """
     self.root_dir = root_dir
     self.image_dir = os.path.join(root_dir, image_dir)
     self.annotation_dir = os.path.join(root_dir, annotation_dir)
     self.caption_dir = os.path.join(root_dir, caption_dir)
+
+    # Create the folders which does not exists
+    if not os.path.exists(self.root_dir):
+      os.mkdir(self.root_dir)
+    if not os.path.exists(self.image_dir):
+      os.mkdir(self.image_dir)
+    if not os.path.exists(self.annotation_dir):
+      os.mkdir(self.annotation_dir)
+    if not os.path.exsts(self.caption_dir):
+      os.mkdir(self.caption_dir)
 
     self.info = info
     self.licenses = licenses
