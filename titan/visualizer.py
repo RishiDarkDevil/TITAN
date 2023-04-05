@@ -53,7 +53,7 @@ class TITANViz(COCO):
       # Plot and visualize results
       plt.axis('off')
       plt.imshow(np.asarray(im))
-      coco_annotation.showAnns(anns1, draw_bbox=True)
+      self.showAnns(anns1, draw_bbox=True)
       for i, ann in enumerate(anns1):
         plt.text(anns1[i]['bbox'][0], anns1[i]['bbox'][1], ann_names1[i], style='italic', 
                 bbox={'facecolor': 'white', 'alpha': 0.7, 'pad': 5})
@@ -120,7 +120,7 @@ class TITANViz(COCO):
       ax[1].axis('off')
       ax[0].imshow(np.asarray(im))
       ax[1].imshow(np.asarray(im))
-      coco_annotation.showAnns(anns, draw_bbox=True)
+      self.showAnns(anns, draw_bbox=True)
       for i, ann in enumerate(anns):
         ax[1].text(anns[i]['bbox'][0], anns[i]['bbox'][1], ann_names[i], style='italic', 
                 bbox={'facecolor': 'white', 'alpha': 0.7, 'pad': 5})
