@@ -80,7 +80,7 @@ class TITANDataset:
     self.save_idx = 1 # The index which stores how many times we saved the json file before
     self.object_annotator = ObjectAnnotator(**kwargs) # Annotates the WordHeatMaps
 
-  def update(self, 
+  def annotate(self, 
     image,
     image_name: str, 
     heatmap, 

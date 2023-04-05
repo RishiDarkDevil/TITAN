@@ -5,3 +5,4 @@ stanza # for stanford pos tagger
 torch
 opencv-python
 daam
+pycocotools
