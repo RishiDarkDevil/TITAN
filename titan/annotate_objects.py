@@ -106,7 +106,7 @@ class ObjectAnnotator:
     return pick, pick2idx
 
 
-  def wordheatmap_to_annotations(self, word_heatmap, image_id: int = -1, word_cat_id: int = -1):
+  def wordheatmap_to_annotations(self, word_heatmap, start_annotation_id: int = 1, image_id: int = -1, word_cat_id: int = -1):
     """
     heat_map: daam WordHeatMap
     image_id: if any (required for COCO dataset format) defaults to -1 meaning not provided
@@ -115,7 +115,7 @@ class ObjectAnnotator:
 
     # stores the annotations
     annotations = list()
-    annotation_id = 1
+    annotation_id = start_annotation_id
 
     # Casting heatmap from 0-1 floating range to 0-255 unsigned 8 bit integer
     heatmap = np.array(word_heatmap * 255, dtype = np.uint8)
