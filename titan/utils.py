@@ -3,6 +3,7 @@ import numpy as np
 import os
 import json
 from typing import List, Dict
+from tqdm import tqdm
 
 class NpEncoder(json.JSONEncoder): 
   """
