@@ -115,4 +115,4 @@ class PromptHandler:
     del pos_tagged_prompt, lemmatized_prompt
     print('Done')
 
-    return sentences_lc_tokenized, fin_prompt, obj_prompt
+    return list(zip(sentences_lc_tokenized, fin_prompt, obj_prompt))

@@ -197,7 +197,7 @@ class TITANDataset:
       self.annotations,
       self.categories,
       self.annotation_dir,
-      f'object-detection-{self.save_idx}.json' if ann_outfile_name is None else f'{ann_outfile_name}'
+      f'object-detectx-{self.save_idx}.json' if ann_outfile_name is None else f'{ann_outfile_name}'
       )
 
     # save captions
@@ -209,6 +209,8 @@ class TITANDataset:
       self.caption_dir,
       f'object-caption-{self.save_idx}.json' if cap_outfile_name is None else f'{cap_outfile_name}'
       )
+
+    self.save_idx += 1
 
   def clear(self):
     # Clearing out all the lists except cat2id to maintaining the unique category ids assigned to each new object
