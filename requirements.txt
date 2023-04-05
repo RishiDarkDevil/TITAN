@@ -3,3 +3,4 @@ transformers # for CLIPTokenizer
 stanza # for stanford pos tagger
 torch
 opencv-python
+daam
