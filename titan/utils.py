@@ -66,7 +66,7 @@ def save_captions(
     'info': info,
     'licenses': licenses,
     'images': images,
-    'annotations': captions,
+    'annotations': annotations,
   }, indent=4, cls=NpEncoder)
 
   # Writing json

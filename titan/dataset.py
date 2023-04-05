@@ -206,7 +206,7 @@ class TITANDataset:
       self.licenses,
       self.images,
       self.annotations,
-      self.caption_dir,
+      self.captions,
       f'object-caption-{self.save_idx}.json' if cap_outfile_name is None else f'{cap_outfile_name}'
       )
 
