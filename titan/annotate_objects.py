@@ -11,7 +11,6 @@ import cv2
 
 # Model
 import torch
-import clip
 
 # Default values to be used if nothing else is specified
 DEVICE = 'cuda' # device
