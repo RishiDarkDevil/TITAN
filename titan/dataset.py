@@ -197,7 +197,7 @@ class TITANDataset:
       self.annotations,
       self.categories,
       self.annotation_dir,
-      f'object-detectx-{self.save_idx}.json' if ann_outfile_name is None else f'{ann_outfile_name}'
+      f'object-detect-{self.save_idx}.json' if ann_outfile_name is None else f'{ann_outfile_name}'
       )
 
     # save captions
@@ -205,8 +205,8 @@ class TITANDataset:
       self.info,
       self.licenses,
       self.images,
-      self.annotations,
       self.captions,
+      self.captions_dir,
       f'object-caption-{self.save_idx}.json' if cap_outfile_name is None else f'{cap_outfile_name}'
       )
 
