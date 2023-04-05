@@ -53,7 +53,7 @@ def save_captions(
   info: Dict, 
   licenses: List, 
   images: List, 
-  annotations: List, 
+  captions: List, 
   out_directory: str = 'Data-Generated/captions',
   outfile_name: str = 'object-caption.json'
   ):
@@ -66,7 +66,7 @@ def save_captions(
     'info': info,
     'licenses': licenses,
     'images': images,
-    'annotations': annotations,
+    'annotations': captions,
   }, indent=4, cls=NpEncoder)
 
   # Writing json
