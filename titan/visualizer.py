@@ -71,13 +71,13 @@ class TITANViz(COCO):
     (If passed image_name is ignored)
     """
 
-    print('----- INTERACTIVE IMAGE ANNOTATIOn VISUALIZER -----')
+    print('----- INTERACTIVE IMAGE ANNOTATION VISUALIZER -----')
 
     # Set default plotting dims
     plt.rcParams["figure.figsize"] = figsize
 
     if image_id == None:
-      for image in coco_annotation.dataset['images']:
+      for image in self.dataset['images']:
         if image['file_name'] == image_name:
           image_id = image['id']
 
