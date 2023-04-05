@@ -115,6 +115,7 @@ class ObjectAnnotator:
 
     # stores the annotations
     annotations = list()
+    annotation_id = 1
 
     # Casting heatmap from 0-1 floating range to 0-255 unsigned 8 bit integer
     heatmap = np.array(word_heatmap * 255, dtype = np.uint8)
