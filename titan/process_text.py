@@ -59,25 +59,25 @@ class PromptHandler:
     pos_batch_size: int = 6500, 
     keep_pos_tags: List[str] = KEEP_POS_TAGS
     ):
-  
+    
+    print('Loading Models...', end='')
+
     # loads the CLIPTokenizer with the configuration same as that used in the Diffusion Model
     # Using Stanza Tokenizer might generate different tokens compared to the CLIP, leading to misalignment in DAAM - Causing Error
     self.tokenizer = CLIPTokenizer.from_pretrained(hf_diffusion_model_path, subfolder=hf_diffusion_model_subfolder)
 
-    print('Loading the NLTK Stopwords...')
     nltk.download('stopwords')
 
     # Stopwords
     STOPWORDS = set(stopwords.words('english'))
     self.stpwords = STOPWORDS
-    print('Done!')
 
-    print('Loading the Stanza Model...')
     # downloads the stanza model
     stanza.download('en')
     # loads the text processing pipeline, pretokenized as CLIPTokenizer will do the tokenizer and need not be handled by stanza
     self.nlp = stanza.Pipeline(lang='en', processors='tokenize,mwt,pos,lemma', tokenize_no_ssplit=tokenize_no_ssplit, tokenize_pretokenized=True, verbose=True, pos_batch_size=pos_batch_size)
-    print('Done!')
+
+    print('Done')
 
     self.keep_pos_tags = keep_pos_tags
     
@@ -85,17 +85,21 @@ class PromptHandler:
     """
     Takes in a list of sentences i.e. prompts and returns a tuple of 3 lists which contains tokenized sentences, cleaned sentences, objects in sentences
     """
-    
+    print('Tokenizing...', end='')
     # convert the sentences to lower case and tokenizes the sentences to be passed onto Stanza for POS Tagging
     sentences_lc_tokenized = self.tokenizer.batch_decode([[word for word in sent[1:-1]] for sent in self.tokenizer(sentences)['input_ids'] if len(sent) <= self.tokenizer.model_max_length])
+    print('Done')
 
     # stanza accepts only a single string instead of list of strings. So, we have set the tokenize_no_ssplit=True and have to join each sentence with double newline
     sentence_string = "\n\n".join(sentences_lc_tokenized)
 
+    print('POS Tagging and Lemmatizing...', end='')
     # tokenizes, lemmatizes and pos tags the prompt
     with torch.no_grad():
       processed_prompt = self.nlp(sentence_string)
-    
+    print('Done')
+
+    print('Processing...', end='')
     # extracts pos tags from the processed_prompt
     pos_tagged_prompt = extract_pos(processed_prompt)
     
@@ -109,5 +113,6 @@ class PromptHandler:
     obj_prompt = [[word_lemma[1] for word_pos, word_lemma in zip(sent_pos, sent_lemma) if (word_lemma[0] is not None and word_lemma[1] is not None) and ((word_pos[1] in self.keep_pos_tags) and ((word_lemma[0] not in self.stpwords) or (word_lemma[1] not in self.stpwords)) and word_lemma[0].isalpha() and word_lemma[1].isalpha())] for sent_pos, sent_lemma in zip(pos_tagged_prompt, lemmatized_prompt)]
     
     del pos_tagged_prompt, lemmatized_prompt
-    
+    print('Done')
+
     return sentences_lc_tokenized, fin_prompt, obj_prompt
