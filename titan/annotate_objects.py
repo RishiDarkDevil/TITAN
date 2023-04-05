@@ -134,7 +134,7 @@ class ObjectAnnotator:
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
     if len(cnts) == 0: # If no contours detected skip
-      continue
+      return None
     
     # Filtering contours based on their small area
     cnts_areas = [cv2.contourArea(cnt) for cnt in cnts]
