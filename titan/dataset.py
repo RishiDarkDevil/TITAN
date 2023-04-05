@@ -60,7 +60,7 @@ class TITANDataset:
       os.mkdir(self.image_dir)
     if not os.path.exists(self.annotation_dir):
       os.mkdir(self.annotation_dir)
-    if not os.path.exsts(self.caption_dir):
+    if not os.path.exists(self.caption_dir):
       os.mkdir(self.caption_dir)
 
     self.info = info
