@@ -2,9 +2,13 @@
 from typing import Tuple
 from IPython.display import clear_output
 import functools
+import os
 
 # Plotting
 import matplotlib.pyplot as plt
+
+# Image Handling
+from PIL import Image
 
 # Data Handling
 from pycocotools.coco import COCO

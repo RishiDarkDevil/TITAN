@@ -138,9 +138,9 @@ def merge_annotation_files(
 
 
 def merge_caption_files(
-  captiontion_directory: str = 'Data-Generated/captions',
+  caption_directory: str = 'Data-Generated/captions',
   caption_file_names: List[str] = None,
-  outfile_name: str = 'annotations.json',
+  outfile_name: str = 'captions.json',
   remove_parts_after_merge: bool = False
   ):
   """
