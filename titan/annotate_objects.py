@@ -9,9 +9,6 @@ import numpy as np
 # Image Processing
 import cv2
 
-# Image Generation
-from daam import WordHeatMap
-
 # Model
 import torch
 import clip
@@ -110,7 +107,7 @@ class ObjectAnnotator:
     return pick, pick2idx
 
 
-  def wordheatmap_to_annotations(self, word_heatmap: WordHeatMap, image_id: int = -1, word_cat_id: int = -1):
+  def wordheatmap_to_annotations(self, word_heatmap, image_id: int = -1, word_cat_id: int = -1):
     """
     heat_map: daam WordHeatMap
     image_id: if any (required for COCO dataset format) defaults to -1 meaning not provided
