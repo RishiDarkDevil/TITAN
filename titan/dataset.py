@@ -182,7 +182,7 @@ class TITANDataset:
       self.annotations.extend(anns)
 
       # Incrementent annotation id
-      self.annotation_id + len(anns)
+      self.annotation_id += len(anns)
 
     # Increment image id and caption id
     self.image_id += 1
