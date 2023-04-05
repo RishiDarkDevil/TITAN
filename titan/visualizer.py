@@ -13,7 +13,7 @@ from pycocotools.coco import COCO
 from ipywidgets import Output
 from ipywidgets import Button, HBox, VBox, Output
 
-class TITAN(COCO):
+class TITANViz(COCO):
 
   def __init__(
     self, 
