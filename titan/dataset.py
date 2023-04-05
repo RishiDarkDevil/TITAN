@@ -89,6 +89,7 @@ class TITANDataset:
     """
     Updates all the COCO components
     image: generated PIL image
+    image_name: the name with which this image is saved along with extension
     heatmap: daam GlobalHeatMap
     processed_prompt: A Tuple of (sentence, tokenized and cleaned sentence, objects)
     """
@@ -117,7 +118,7 @@ class TITANDataset:
     width, height = output_image.size
     image_det = {
         'license': 1,
-        'file_name': f'{image_name}.png',
+        'file_name': f'{image_name}',
         'height': height,
         'width': width,
         'date_captured': datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
