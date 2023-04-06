@@ -158,6 +158,9 @@ class ObjectAnnotator:
     filtered_bboxes = [area >= bbox_area_filter_threshold for area in bbox_areas]
     bboxes = bboxes[filtered_bboxes, :]
 
+    # If any bounding box is removed above its corresponding contour should also be removed
+    cnts = [cnts[k] for k in range(len(cnts)) if filtered_bboxes[k]]
+
     # Merge multiple box predictions using Non-Max Suppression
     picks, picks2idx = self.non_max_suppression_fast(bboxes)
     picks2idx = {pick:list(set(idxs)) for pick, idxs in picks2idx.items()}
