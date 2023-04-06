@@ -10,6 +10,7 @@ import numpy as np
 import cv2
 
 # Plotting
+import matplotlib.pyplot as plt
 from .visualizer import showAnns
 
 # Model
@@ -218,13 +219,14 @@ class ObjectAnnotator:
     return annotations
 
 
-  def show_annotations(self, image, anns: List, draw_bbox=True, figsize=(10,10)):
+  def show_annotations(self, image_arr, anns: List, draw_bbox=True, figsize=(10,10)):
     """
     Visualizes the Annotations
     The image on which annotations needs to be shown needs to be plotted before this is called otherwise no effect can be seen
+    image_arr: numpy array form of the image
     anns: list of annotations in COCO format only the annotations
     """
     plt.figure(figsize=figsize)
+    plt.imshow(image_arr)
     plt.axis('off')
     showAnns(anns, draw_bbox)
-    plt.imshow(image)
