@@ -9,6 +9,9 @@ import numpy as np
 # Image Processing
 import cv2
 
+# Plotting
+from .visualizer import showAnns
+
 # Model
 import torch
 
@@ -108,7 +111,9 @@ class ObjectAnnotator:
 
   def wordheatmap_to_annotations(self, word_heatmap, start_annotation_id: int = 1, image_id: int = -1, word_cat_id: int = -1):
     """
-    heat_map: daam WordHeatMap
+    TODO: Change the name at heatmap_to_annotations!
+    
+    heat_map: word heatmap as an array
     image_id: if any (required for COCO dataset format) defaults to -1 meaning not provided
     word_cat_id: if any (the id of the current word) defaults to -1 meaning not provided
     """
@@ -212,3 +217,14 @@ class ObjectAnnotator:
 
     return annotations
 
+
+  def show_annotations(self, image, anns: List, draw_bbox=True, figsize=(10,10)):
+    """
+    Visualizes the Annotations
+    The image on which annotations needs to be shown needs to be plotted before this is called otherwise no effect can be seen
+    anns: list of annotations in COCO format only the annotations
+    """
+    plt.figure(figsize=figsize)
+    plt.axis('off')
+    showAnns(anns, draw_bbox)
+    plt.imshow(image)
