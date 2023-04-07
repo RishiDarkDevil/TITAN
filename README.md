@@ -88,7 +88,7 @@ The several parts of a Data Generation Pipeline supported by TITAN:
         print(f'Image No.: {j+1}/{NUM_IMAGES_PER_PROMPT}')
         print('Generating Image...')
 
-        # generating images
+        # generating images. keeping track of the attention heatmaps
         with daam.trace(model) as trc:
           output_image = model(prompt, num_inference_steps=NUM_INFERENCE_STEPS).images[0]
           global_heat_map = trc.compute_global_heat_map()
@@ -97,7 +97,7 @@ The several parts of a Data Generation Pipeline supported by TITAN:
         output_image.save(os.path.join(titan_dataset.image_dir, f'{i}_{j}.png'))
         print(f'Saved Generated Image... {i}_{j}.png')
         
-        # Object Annotate Image
+        # Object Annotate Generated Image using the attention heatmaps
         print(f'Adding Annotation for {i}_{j}.png')
         titan_dataset.annotate(output_image, f'{i}_{j}.png', global_heat_map, processed_prompt)
 
