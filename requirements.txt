@@ -1,11 +1,12 @@
-numpy
-matplotlib
+numpy # matrix manipulation
+matplotlib # plot
 nltk # for stopwords
 transformers # for CLIPTokenizer
 stanza # for stanford pos tagger
-torch
-opencv-python
-daam
-pycocotools
-tqdm
-ipywidgets
+torch # pytorch
+opencv-python # image processing
+daam # text-image heatmap
+pycocotools # COCO data format
+tqdm # progress bar
+ipywidgets # for interactive visualizer
+# git+https://github.com/RishiDarkDevil/daam-i2i.git # for image-image heatmap
