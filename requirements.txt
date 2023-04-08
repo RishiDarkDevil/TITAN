@@ -5,7 +5,7 @@ transformers # for CLIPTokenizer
 stanza # for stanford pos tagger
 torch # pytorch
 opencv-python # image processing
-daam # text-image heatmap
+daam==0.0.12 # text-image heatmap
 pycocotools # COCO data format
 tqdm # progress bar
 ipywidgets # for interactive visualizer
