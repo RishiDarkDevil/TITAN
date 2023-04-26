@@ -1,14 +1,10 @@
 # TITAN: Large-Scale Visual ObjecT DIscovery Through Text attention using StAble DiffusioN
 
-TITAN is a All-In-One destination if you are willing to create a synthetic segmentation/object annotated dataset if you have access to only prompts! The entire pipeline is very intuitive and you can have your dataset ready with less than 30 lines of code!
+TITAN is a All-In-One destination if you are willing to create a synthetic segmentation/object annotated dataset if you have access to **only prompts**! The entire pipeline is very intuitive and you can have your dataset ready with less than 30 lines of code!
 
 It relies on Stable Diffusion/Diffusion Models and Diffusion Attentive Attribution Map.
 
-<p align="center">
-  <img src="examples/annotated-image.png"/>
-</p>
-
-child annotation seelcted | chairlift annotation selected
+child annotation | chairlift annotation
 -|-
 ![child annotation](examples/int-viz-2.png)|![chairlift annotation](examples/int-viz-1.png)
 
