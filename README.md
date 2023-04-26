@@ -4,6 +4,14 @@ TITAN is a All-In-One destination if you are willing to create a synthetic segme
 
 It relies on Stable Diffusion/Diffusion Models and Diffusion Attentive Attribution Map.
 
+<p align="center">
+  <img src="examples/annotated-image.png"/>
+</p>
+
+child annotation seelcted | chairlift annotation selected
+-|-
+![child annotation](examples/int-viz-2.png)|![chairlift annotation](examples/int-viz-1.png)
+
 ## Getting Started
 
 First install [PyTorch](https://pytorch.org/) for your platform. You may also check the [Colab Tutorial](https://colab.research.google.com/drive/1CIHmTALtNLs4Pj7QrU2N9F6emJFTzBRB?usp=sharing).
