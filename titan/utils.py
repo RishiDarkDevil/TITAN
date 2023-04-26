@@ -1,9 +1,13 @@
 # General
 import numpy as np
+import gc
 import os
 import json
 from typing import List, Dict
 from tqdm import tqdm
+
+# Model
+import torch
 
 class NpEncoder(json.JSONEncoder): 
   """
@@ -193,3 +197,15 @@ def merge_caption_files(
       os.remove(os.path.join(caption_directory, cap_file_name))
     print('Done')
   print('A successful merge!')
+
+def optimize_gpu():
+  """
+  Frees up GPU to help reduce memory leak
+  Reset Already occupied Memory and Cache
+  """
+  torch.cuda.reset_max_memory_allocated()
+  torch.cuda.reset_max_memory_cached()
+  torch.cuda.empty_cache()
+
+  # Garbage Collection
+  gc.collect()

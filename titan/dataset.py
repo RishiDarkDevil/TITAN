@@ -85,7 +85,7 @@ class TITANDataset:
     image_name: str, 
     heatmap, 
     processed_prompt: Tuple[str, List[str], List[str]],
-    liecese = 1
+    license = 1
     ):
     """
     Updates all the COCO components
@@ -118,7 +118,7 @@ class TITANDataset:
     # Image details
     width, height = output_image.size
     image_det = {
-        'license': liecense,
+        'license': license,
         'file_name': f'{image_name}',
         'height': height,
         'width': width,
