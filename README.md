@@ -37,7 +37,7 @@ The several parts of a Data Generation Pipeline supported by TITAN:
 
   # List of prompts
   prompts = [
-  "A group of people stand in the back of trucks filled with cotton.",
+  "snowsports children on chairlift",
   "A mother and three children collecting garbage from a blue and white garbage can on the street.",
   ]
 
