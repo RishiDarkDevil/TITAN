@@ -178,7 +178,7 @@ class ObjectAnnotator:
         picks2idx = {pick:list(set(idxs)) for pick, idxs in picks2idx.items()}
         picks = list(picks2idx.keys())
     else:
-        picks, picks2idx = list(range(len(bboxes))), dict([(p, p) for p in range(len(bboxes))])
+        picks, picks2idx = list(range(len(bboxes))), dict([(p, [p]) for p in range(len(bboxes))])
     
     # stores filtered out boxes i.e. small boxes removed
     curr_word_annots = list()
