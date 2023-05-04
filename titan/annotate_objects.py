@@ -110,13 +110,22 @@ class ObjectAnnotator:
     return pick, pick2idx
 
 
-  def wordheatmap_to_annotations(self, word_heatmap, start_annotation_id: int = 1, image_id: int = -1, word_cat_id: int = -1):
+  def wordheatmap_to_annotations(
+    self, 
+    word_heatmap, 
+    start_annotation_id: int = 1, 
+    image_id: int = -1, 
+    word_cat_id: int = -1, 
+    use_nms=True, 
+    skip_small_filters=False):
     """
     TODO: Change the name at heatmap_to_annotations!
     
-    heat_map: word heatmap as an array
+    word_heatmap: word heatmap or simply heatmap as an array
     image_id: if any (required for COCO dataset format) defaults to -1 meaning not provided
     word_cat_id: if any (the id of the current word) defaults to -1 meaning not provided
+    use_nms: True by default, if False does not apply nms
+    skip_small_filters: False by default, if True does not apply filtering of small bboxes or segments
     """
 
     # stores the annotations
@@ -127,7 +136,7 @@ class ObjectAnnotator:
     heatmap = np.array(word_heatmap * 255, dtype = np.uint8)
 
     # Blur the heatmap for better thresholding
-    blurred_heatmap = cv2.GaussianBlur(heatmap, BLUR_KERNEL_SIZE, 0)
+    blurred_heatmap = cv2.GaussianBlur(heatmap, self.blur_kernel_size, 0)
 
     # Binary threshold of the above heatmap - serves as sort of semantic segmentation for the word
     thresh = cv2.threshold(blurred_heatmap, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
@@ -140,10 +149,11 @@ class ObjectAnnotator:
       return None
     
     # Filtering contours based on their small area
-    cnts_areas = [cv2.contourArea(cnt) for cnt in cnts]
-    cnts_area_filter_threshold = np.max(cnts_areas) / self.pre_nms_small_segment_thresh
-    filtered_cnts = [area >= cnts_area_filter_threshold for area in cnts_areas]
-    cnts = [cnts[k] for k in range(len(cnts)) if filtered_cnts[k]]
+    if not skip_small_filters:
+        cnts_areas = [cv2.contourArea(cnt) for cnt in cnts]
+        cnts_area_filter_threshold = np.max(cnts_areas) / self.pre_nms_small_segment_thresh
+        filtered_cnts = [area >= cnts_area_filter_threshold for area in cnts_areas]
+        cnts = [cnts[k] for k in range(len(cnts)) if filtered_cnts[k]]
 
     # Find bounding boxes from contours
     bboxes = np.zeros((len(cnts), 4))
@@ -154,17 +164,21 @@ class ObjectAnnotator:
       bboxes[idx, :] = np.array([x,y, x+w, y+h])
     
     # Filtering bboxes based on their small area
-    bbox_area_filter_threshold = np.max(bbox_areas) / self.pre_nms_small_box_thresh
-    filtered_bboxes = [area >= bbox_area_filter_threshold for area in bbox_areas]
-    bboxes = bboxes[filtered_bboxes, :]
+    if not skip_small_filters:
+        bbox_area_filter_threshold = np.max(bbox_areas) / self.pre_nms_small_box_thresh
+        filtered_bboxes = [area >= bbox_area_filter_threshold for area in bbox_areas]
+        bboxes = bboxes[filtered_bboxes, :]
 
-    # If any bounding box is removed above its corresponding contour should also be removed
-    cnts = [cnts[k] for k in range(len(cnts)) if filtered_bboxes[k]]
+        # If any bounding box is removed above its corresponding contour should also be removed
+        cnts = [cnts[k] for k in range(len(cnts)) if filtered_bboxes[k]]
 
     # Merge multiple box predictions using Non-Max Suppression
-    picks, picks2idx = self.non_max_suppression_fast(bboxes)
-    picks2idx = {pick:list(set(idxs)) for pick, idxs in picks2idx.items()}
-    picks = list(picks2idx.keys())
+    if use_nms:
+        picks, picks2idx = self.non_max_suppression_fast(bboxes)
+        picks2idx = {pick:list(set(idxs)) for pick, idxs in picks2idx.items()}
+        picks = list(picks2idx.keys())
+    else:
+        picks, picks2idx = list(range(len(bboxes))), dict([(p, p) for p in range(len(bboxes))])
     
     # stores filtered out boxes i.e. small boxes removed
     curr_word_annots = list()
@@ -184,9 +198,12 @@ class ObjectAnnotator:
       filtered_segments = list()
 
       # Filtering small segments in current pick for current word/object
-      for seg_idx, ar in enumerate(all_areas):
-        if ar >= curr_pick_seg_small_filter:
-          filtered_segments.append(segments[seg_idx])
+      if not skip_small_filters:
+          for seg_idx, ar in enumerate(all_areas):
+            if ar >= curr_pick_seg_small_filter:
+              filtered_segments.append(segments[seg_idx])
+      else:
+          filtered_segments = segments
 
       # The area inside one annotation is sum of the area of all the segments that form it
       area = np.sum(all_areas)
@@ -216,8 +233,11 @@ class ObjectAnnotator:
     
     # Filtering small box annotations for current word/object
     for ann_det in curr_word_annots:
-      if ann_det['area'] >= curr_word_ann_small_filter:
-        annotations.append(ann_det)
+      if not skip_small_filters:
+          if ann_det['area'] >= curr_word_ann_small_filter:
+            annotations.append(ann_det)
+      else:
+          annotations.append(ann_det)
 
     return annotations
 
