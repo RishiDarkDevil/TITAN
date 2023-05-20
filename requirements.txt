@@ -1,7 +1,7 @@
 numpy # matrix manipulation
 matplotlib # plot
 nltk # for stopwords
-transformers==4.24.0 # for CLIPTokenizer
+git+https://github.com/huggingface/transformers@v4.29.2 # for CLIPTokenizer & CLIPImageProcessor
 stanza # for stanford pos tagger
 torch # pytorch
 opencv-python # image processing
