@@ -17,6 +17,7 @@ First install [PyTorch](https://pytorch.org/) for your platform. You may also ch
 The following steps are required for setting up the `titan` package. The instructions are made kept in mind the Colab environment for ease of understanding. Feel free to adapt it to work on your local machine/cloud server.
 
 ```console
+pip install daam==0.0.12
 pip install git+https://github.com/RishiDarkDevil/TITAN.git
 ```
 
