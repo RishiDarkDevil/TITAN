@@ -209,3 +209,35 @@ def optimize_gpu():
 
   # Garbage Collection
   gc.collect()
+
+
+def find_max_class_id(
+  annotation_directory: str = 'Data-Generated/annotations',
+  annotation_file_names: List[str] = None
+  ):
+  """
+  Finds the max class id useful 
+  when trying to train DETR Object detection model
+  annotation_directory: The directory containing the annotation files to be merged
+  annotation_file_names: (optional) the names of the annotation files along with extension in the `annotation_directory` to be merged
+  (If not passed considers all the files in the directory)
+
+  """
+  if annotation_file_names is None:
+    # Annotation File Names present in the annotations directory
+    ann_file_names = os.listdir(annotation_directory)
+  else:
+    ann_file_names = annotation_file_names
+  
+  max_class_id = -1
+  
+  for ann_file_name in tqdm(ann_file_names): # Loads the annotation json files and appens to ann_files
+
+    with open(os.path.join(annotation_directory, ann_file_name)) as json_file:
+    
+      ann_file = json.load(json_file)
+      categories = ann_file['categories']
+      # get the max class id for the current annotation file
+      max_class_id = max([x['id'] for x in categories] + [max_class_id])
+
+  return max_class_id
