@@ -49,6 +49,111 @@ class ObjectAnnotator:
     self.small_segment_thresh = small_segment_thresh
     self.small_box_thresh = small_box_thresh
 
+  # Adapted from: https://github.com/cocodataset/cocoapi/issues/153#issuecomment-1833866223 to handle contours with holes using a trick
+  # it connects the holes with the outer polygon so that it becomes a single polygon.
+  def is_clockwise(self, contour):
+    """
+    Finds whether a given `contour` is clockwise or not
+    """
+    value = 0
+    num = len(contour)
+    for i, point in enumerate(contour):
+        p1 = contour[i]
+        if i < num - 1:
+          p2 = contour[i + 1]
+        else:
+          p2 = contour[0]
+        value += (p2[0][0] - p1[0][0]) * (p2[0][1] + p1[0][1]);
+    return value < 0
+
+  def get_merge_point_idx(self, contour1, contour2):
+    """
+    Helper function for `merge_with_parent`
+    Finds the point (index) of merging of two contours.
+    """
+    idx1 = 0
+    idx2 = 0
+    distance_min = -1
+    for i, p1 in enumerate(contour1):
+      for j, p2 in enumerate(contour2):
+        distance = pow(p2[0][0] - p1[0][0], 2) + pow(p2[0][1] - p1[0][1], 2);
+        if distance_min < 0:
+          distance_min = distance
+          idx1 = i
+          idx2 = j
+        elif distance < distance_min:
+          distance_min = distance
+          idx1 = i
+          idx2 = j
+    return idx1, idx2
+
+  def merge_contours(self, contour1, contour2, idx1, idx2):
+    """
+    Helper funtion for `merge_with_parent`.
+    Merge two contours.
+    """
+    contour = []
+    for i in list(range(0, idx1 + 1)):
+      contour.append(contour1[i])
+    for i in list(range(idx2, len(contour2))):
+      contour.append(contour2[i])
+    for i in list(range(0, idx2 + 1)):
+      contour.append(contour2[i])
+    for i in list(range(idx1, len(contour1))):
+      contour.append(contour1[i])
+    contour = np.array(contour)
+    return contour
+
+  def merge_with_parent(self, contour_parent, contour):
+    """
+    Helper function for `mask2polygon`.
+    Merge the `contour` (hole contour) with the `contour_parent`.
+    """
+    if not self.is_clockwise(contour_parent):
+      contour_parent = contour_parent[::-1]
+    if self.is_clockwise(contour):
+      contour = contour[::-1]
+    idx1, idx2 = self.get_merge_point_idx(contour_parent, contour)
+    return self.merge_contours(contour_parent, contour, idx1, idx2)
+
+  def mask2polygon(self, binary_image):
+    """
+    Helper function for `wordheatmap_to_annotation`.
+    Returns the contours present in an image. Handles holes as well by merging them with parent contour.
+    - `binary_image`: The binary image for which polygons needs to be returned for further proessing.
+    """
+    contours, hierarchies = cv2.findContours(binary_image, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_TC89_KCOS)
+    contours_approx = []
+    polygons = []
+    for contour in contours:
+      epsilon = 0.001 * cv2.arcLength(contour, True)
+      contour_approx = cv2.approxPolyDP(contour, epsilon, True)
+      contours_approx.append(contour_approx)
+
+    contours_parent = []
+    for i, contour in enumerate(contours_approx):
+      parent_idx = hierarchies[0][i][3]
+      if parent_idx < 0 and len(contour) >= 3:
+        contours_parent.append(contour)
+      else:
+        contours_parent.append([])
+
+    for i, contour in enumerate(contours_approx):
+      parent_idx = hierarchies[0][i][3]
+      if parent_idx >= 0 and len(contour) >= 3:
+        contour_parent = contours_parent[parent_idx]
+        if len(contour_parent) == 0:
+          continue
+        contours_parent[parent_idx] = self.merge_with_parent(contour_parent, contour)
+
+    contours_parent_tmp = []
+    for contour in contours_parent:
+      if len(contour) == 0:
+        continue
+      contours_parent_tmp.append(contour)
+
+    return tuple(contours_parent_tmp)
+
 
   def non_max_suppression_fast(self, boxes):
     """
@@ -121,7 +226,7 @@ class ObjectAnnotator:
     """
     TODO: Change the name at heatmap_to_annotations!
     
-    word_heatmap: word heatmap or simply heatmap as an array
+    word_heatmap: word heatmap or simply heatmap as an array --> The heatmap pixels must be in 0 to 1 range
     image_id: if any (required for COCO dataset format) defaults to -1 meaning not provided
     word_cat_id: if any (the id of the current word) defaults to -1 meaning not provided
     use_nms: True by default, if False does not apply nms
@@ -142,8 +247,10 @@ class ObjectAnnotator:
     thresh = cv2.threshold(blurred_heatmap, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
     # Find contours from the binary threshold
-    cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    cnts = self.mask2polygon(thresh)
+    # the following 2 lines can be used but it does not detect holes present within an object
+    # cnts = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
     if len(cnts) == 0: # If no contours detected skip
       return None
