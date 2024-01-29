@@ -1,6 +1,6 @@
-# TITAN: Large-Scale Visual ObjecT DIscovery Through Text attention using StAble DiffusioN
+# TITAN: Large-Scale Visual ObjecT DIscovery Through Text Attention using StAble DiffusioN
 
-TITAN is a All-In-One destination if you are willing to create a synthetic segmentation/object annotated dataset if you have access to **only prompts**! The entire pipeline is very intuitive and you can have your dataset ready with less than 30 lines of code!
+TITAN is an All-In-One destination if you are willing to create a synthetic segmentation/object annotated dataset if you have access to **only prompts**! The entire pipeline is very intuitive and you can have your dataset ready with less than 30 lines of code!
 
 It relies on Stable Diffusion/Diffusion Models and Diffusion Attentive Attribution Map.
 
@@ -10,11 +10,11 @@ child annotation | chairlift annotation
 
 ## Getting Started
 
-First install [PyTorch](https://pytorch.org/) for your platform. You may also check the [Colab Tutorial](https://colab.research.google.com/drive/1CIHmTALtNLs4Pj7QrU2N9F6emJFTzBRB?usp=sharing).
+First, install [PyTorch](https://pytorch.org/) for your platform. You may also check the [Colab Tutorial](https://colab.research.google.com/drive/1CIHmTALtNLs4Pj7QrU2N9F6emJFTzBRB?usp=sharing).
 
 ### Installation
 
-The following steps are required for setting up the `titan` package. The instructions are made kept in mind the Colab environment for ease of understanding. Feel free to adapt it to work on your local machine/cloud server.
+The following steps are required for setting up the `titan` package. The instructions are made keeping in mind the Colab environment for ease of understanding. Feel free to adapt it to work on your local machine/cloud server.
 
 ```console
 pip install daam==0.0.12
