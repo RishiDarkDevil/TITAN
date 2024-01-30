@@ -83,23 +83,22 @@ class TITANDataset:
   def annotate(self, 
     image,
     image_name: str, 
-    heatmap, 
+    global_heat_map, 
     processed_prompt: Tuple[str, List[str], List[str]],
-    license = 1
+    license = 1,
+    image_global_heat_map = None
     ):
     """
     Updates all the COCO components
     image: generated PIL image
     image_name: the name with which this image is saved along with extension
-    heatmap: daam GlobalHeatMap
+    global_heat_map: daam GlobalHeatMap
     processed_prompt: A Tuple of (sentence, tokenized and cleaned sentence, objects)
+    image_global_heat_map: [Optional] daami2i GlobalHeatMap, if provided finds the DAAM-I2I guided heatmap
     """
 
     # The generated image
     output_image = image
-
-    # The WordHeatMaps are to be obtained from here
-    global_heat_map = heatmap
 
     # Picking up the ith original prompt, cleaned prompt and object prompt
     prompt, cleaned_prompt, object_prompt = processed_prompt
@@ -140,9 +139,18 @@ class TITANDataset:
 
       # word category id
       word_cat_id = self.cat2id[obj]
+
+      # Compute word heatmap for a non-stopword
+      word_heatmap_temp = global_heat_map.compute_word_heat_map(word)
       
-      # Compute heatmap for a non-stopword
-      word_heatmap = global_heat_map.compute_word_heat_map(word).expand_as(output_image).numpy()
+      if image_global_heat_map is None:
+        # Compute word heatmap for a non-stopword
+        word_heatmap = word_heatmap_temp.expand_as(output_image).numpy()
+      
+      else:
+        # Compute daami2i word guided heatmap for a non-stopword
+        word_heatmap = image_global_heat_map.compute_guided_heat_map(word_heatmap_temp.heatmap)
+        word_heatmap = word_heatmap.expand_as(output_image).numpy()
 
       # Annotate the Word Heatmap for current word
       anns = self.object_annotator.wordheatmap_to_annotations(
