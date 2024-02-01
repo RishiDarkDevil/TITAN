@@ -331,6 +331,7 @@ class ObjectAnnotator:
           'bbox': [x, y, w, h],
           'category_id': word_cat_id,
           'id': annotation_id,
+          'score': 0.0 # Doesn't actually matter much (If you aren't using this field later in some downstream task)
       }
       annotation_id += 1
       curr_word_annots.append(ann_det)
