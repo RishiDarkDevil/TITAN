@@ -5,6 +5,9 @@ from tqdm import tqdm
 import os
 from typing import Tuple, List, Dict
 
+# Image Handling
+from PIL import Image
+
 # ObjectAnnotator
 from .annotate_objects import ObjectAnnotator
 
@@ -84,18 +87,92 @@ class TITANDataset:
   def load_image_name2id_dict(self):
     """
     Creates the image_name to id mapping given the `self.images`.
-    Put the image info in the self.images and then run this function.
     """
     for img in self.images:
       self.image_name2id[img['file_name']] = img['id']
     print('Created image file name to id mapping... Done')
+  
+  def set_image_info(self, image_infos):
+    """
+    Sets the image infos in the `self.images`.
+    - image_info: List of image info in the COCO format.
+    """
+    self.images = image_infos
+    self.load_image_name2id_dict()
+  
+  def set_caption_info(self, cap_infos):
+    """
+    Sets the caption infos in the `self.captions`.
+    - cap_infos: List of caption info in the COCO format
+    """
+    self.captions = cap_infos
 
-  def create_image_name2id_dict(self):
+  def create_image_infos(self):
     """
-    Creates the image_name to id mapping on its own if the user does not
-    want to provide it on his own. TODO
+    Creates the image infos based on the images present in the `self.image_dir` folder.
+    Useful when you are lazy to self-assign image info in COCO format to self.images
     """
-    pass
+    # get the image names
+    image_names = os.listdir(self.image_dir)
+
+    print('Getting Image Infos...', end='')
+
+    # iterating over the image names
+    for image_name in tqdm(image_names):
+
+      # loading the image to get the size
+      image = Image.open(os.path.join(self.image_dir, image_name)).convert('RGB')
+
+      # Image details
+      width, height = image.size
+      image_det = {
+          'license': license,
+          'file_name': f'{image_name}',
+          'height': height,
+          'width': width,
+          'date_captured': datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+          'id': self.image_id
+      }
+
+      # appending this info to the self.images
+      self.images.append(image_det)
+      
+      # incrementing image id
+      self.image_id += 1
+
+    print('Done')
+
+    # create the image name to image id mapping
+    self.load_image_name2id_dict()
+  
+  def create_caption_infos(self, img_cap_dict):
+    """
+    Note: The image infos must be set before running this.
+    Creates the caption infos based on the `img_cap_dict`.
+    img_cap_dict: maps the image_name(with extension) to caption string
+    """
+    for image_name, caption_prompt in img_cap_dict.items():
+
+      # load the corresponding image id for the `image_name`
+      if image_name in self.image_name2id:
+        curr_image_id = self.image_name2id[image_name]
+
+      else:
+        print(f'{image_name} is not present in the image info. Did you forget to run `set_image_info` or `create_image_infos`?')
+        return
+      
+      # Captions details
+      cap_det = {
+          'id': self.caption_id,
+          'image_id': curr_image_id,
+          'caption': caption_prompt
+      }
+
+      # appending this info to the self.captions
+      self.captions.append(cap_det)
+      
+      # incrementing caption id
+      self.caption_id += 1
 
   def annotate_mask(self, 
     mask,
@@ -103,9 +180,8 @@ class TITANDataset:
     object_name: str,
     ):
     """
-    Note: Before you run this function make sure you assign the image infos in `self.images` and respective caption info in `self.captions`.
-    The above step is necessary as when annotating with mask. It is assumed that you already have the images and its captions. The annotation
-    info is missing which this function adds given the segmentation mask.
+    Note: Before you run this function make sure you assign the image infos and caption infos using `set_image_info` and `set_caption_info`.
+    If you are lazy to do that. Run `create_image_infos` and then `create_caption_infos`
 
     Updates all the COCO components - when you pass a mask corresponding to the `image_name`, it annotates the mask
     i.e. generates segmentation and bboxes and other fields.
@@ -120,14 +196,15 @@ class TITANDataset:
       # Check if the values of the mask are between 0 and 1.
       assert mask.max() <= 1.0
 
-    # Check if the image name to id mapping is present or not
+    # Check if the image name to id mapping is present or not.
+    # Run `load_image_name2id_dict()` or `create_image_name2id_dict()` to generate this mapping
     assert len(self.image_name2id) > 0
 
     # load the corresponding image id for the `image_name`
     if image_name in self.image_name2id:
       curr_image_id = self.image_name2id[image_name]
     else:
-      print(f'{image_name} is not present in the loaded set of image info. Did you forget to run `load_image_name2id_dict`?')
+      print(f'{image_name} is not present in the image info. Did you forget to run `set_image_info` or `create_image_infos`?')
       return
 
     # If the object name is new then we add a new category
@@ -161,7 +238,8 @@ class TITANDataset:
     ):
     """
     Updates all the COCO components - Suited only when you are using DAAM or DAAM-I2I to annotate i.e. a fully
-    generative pipeline and annotations using Attention Heatmaps of the generative model.
+    generative pipeline and annotations using Attention Heatmaps of the generative model. The images are generated
+    and annotated on the fly so we keep on updating the image info and caption info on the go as well.
     image: generated PIL image
     image_name: the name with which this image is saved along with extension
     global_heat_map: daam GlobalHeatMap
@@ -225,9 +303,13 @@ class TITANDataset:
         word_heatmap = word_heatmap.expand_as(output_image).numpy()
 
       # Annotate the Word Heatmap for current word
-      anns = self.object_annotator.wordheatmap_to_annotations(
-        word_heatmap, self.annotation_id, self.image_id, word_cat_id
-        )
+      try:
+        anns = self.object_annotator.wordheatmap_to_annotations(
+          word_heatmap, self.annotation_id, self.image_id, word_cat_id
+          )
+      except Exception as e:
+        print(f'The following error popped up while trying to annotate the word heatmap for {obj} in the image {image_name}:', e)
+        anns = list()
 
       # # If no annotation detected for current word
       # if anns is None:
