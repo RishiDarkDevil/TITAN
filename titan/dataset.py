@@ -151,6 +151,10 @@ class TITANDataset:
     Creates the caption infos based on the `img_cap_dict`.
     img_cap_dict: maps the image_name(with extension) to caption string
     """
+
+    # Did you forget to run `set_image_info` or `create_image_infos`?
+    assert len(self.image_name2id) > 0
+
     for image_name, caption_prompt in img_cap_dict.items():
 
       # load the corresponding image id for the `image_name`
@@ -158,7 +162,7 @@ class TITANDataset:
         curr_image_id = self.image_name2id[image_name]
 
       else:
-        print(f'{image_name} is not present in the image info. Did you forget to run `set_image_info` or `create_image_infos`?')
+        print(f'{image_name} is not present in the image info provided!')
         return
       
       # Captions details
@@ -196,15 +200,14 @@ class TITANDataset:
       # Check if the values of the mask are between 0 and 1.
       assert mask.max() <= 1.0
 
-    # Check if the image name to id mapping is present or not.
-    # Run `load_image_name2id_dict()` or `create_image_name2id_dict()` to generate this mapping
+    # Did you forget to run `set_image_info` or `create_image_infos`?
     assert len(self.image_name2id) > 0
 
     # load the corresponding image id for the `image_name`
     if image_name in self.image_name2id:
       curr_image_id = self.image_name2id[image_name]
     else:
-      print(f'{image_name} is not present in the image info. Did you forget to run `set_image_info` or `create_image_infos`?')
+      print(f'{image_name} is not present in the image info provided!')
       return
 
     # If the object name is new then we add a new category
