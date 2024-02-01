@@ -93,8 +93,6 @@ class TITANDataset:
     mask,
     image_name: str, 
     object_name: str,
-    caption_prompt: str = '',
-    license = 1
     ):
     """
     Note: Before you run this function make sure you assign the image infos in `self.images` and respective caption info in `self.captions`.
