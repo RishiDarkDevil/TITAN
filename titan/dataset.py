@@ -79,15 +79,28 @@ class TITANDataset:
     self.caption_id = 1 # Assigns captions caption ids
     self.save_idx = 1 # The index which stores how many times we saved the json file before
     self.object_annotator = ObjectAnnotator(**kwargs) # Annotates the WordHeatMaps
+    self.image_name2id = dict() # Stores the image name to id mapping
   
+  def load_image_name2id_dict(self):
+    """
+    Creates the image_name to id mapping given the `self.images`
+    """
+    for img in self.images:
+      self.image_name2id[img['file_name']] = img['id']
+    print('Created image file name to id mapping... Done')
+
   def annotate_mask(self, 
     mask,
     image_name: str, 
     object_name: str,
     caption_prompt: str = '',
-    license = 1,
+    license = 1
     ):
     """
+    Note: Before you run this function make sure you assign the image infos in `self.images` and respective caption info in `self.captions`.
+    The above step is necessary as when annotating with mask. It is assumed that you already have the images and its captions. The annotation
+    info is missing which this function adds given the segmentation mask.
+
     Updates all the COCO components - when you pass a mask corresponding to the `image_name`, it annotates the mask
     i.e. generates segmentation and bboxes and other fields.
     mask: [np.array] the segmentation mask (should be of the same size as the `image_name`) - preferably a binary image, heatmap also works
@@ -100,6 +113,9 @@ class TITANDataset:
     # Check if the values of the mask are between 0 and 1.
     assert mask.max() <= 1.0
 
+    # Check if the image info and caption info is there or not
+    assert (len(self.images) > 0) and (len(self.captions) > 0)
+
     # Stores the new objects found in this prompt
     new_words = list()
     
@@ -109,33 +125,20 @@ class TITANDataset:
       self.cat2id[object_name] = self.cat_id
       self.categories.append({"supercategory": '', "id": self.cat_id, "name": object_name}) ### FIX SUPERCATEGORY
       self.cat_id += 1
-
-    # Image details
-    width, height = mask.shape
-    image_det = {
-        'license': license,
-        'file_name': f'{image_name}',
-        'height': height,
-        'width': width,
-        'date_captured': datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
-        'id': self.image_id
-    }
-    self.images.append(image_det)
-
-    # Captions details
-    cap_det = {
-        'id': self.caption_id,
-        'image_id': self.image_id,
-        'caption': caption_prompt
-    }
-    self.captions.append(cap_det)
+    
+    # load the corresponding image id for the `image_name`
+    if image_name in self.image_name2id:
+      curr_image_id = self.image_name2id[image_name]
+    else:
+      print(f'{image_name} is not present in the loaded set of image info. Did you forget to run `load_image_name2id_dict`?')
+      return
 
     # word category id
     word_cat_id = self.cat2id[object_name]
 
     # Annotate the Word Heatmap for current word
     anns = self.object_annotator.wordheatmap_to_annotations(
-      mask, self.annotation_id, self.image_id, word_cat_id
+      mask, self.annotation_id, curr_image_id, word_cat_id
       )
 
     # If no annotation detected for current word
@@ -170,10 +173,6 @@ class TITANDataset:
 
     # Incrementent annotation id
     self.annotation_id += len(anns)
-
-    # Increment image id and caption id
-    self.image_id += 1
-    self.caption_id += 1
 
   def annotate(self, 
     image,
