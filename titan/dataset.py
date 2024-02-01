@@ -116,22 +116,13 @@ class TITANDataset:
     caption_prompt: the caption corresponding to the `image_name` if any
     """
 
-    # Check if the values of the mask are between 0 and 1.
-    assert mask.max() <= 1.0
+    if mask is not None:
+      # Check if the values of the mask are between 0 and 1.
+      assert mask.max() <= 1.0
 
     # Check if the image name to id mapping is present or not
     assert len(self.image_name2id) > 0
 
-    # Stores the new objects found in this prompt
-    new_words = list()
-    
-    # If the object name is new then we add a new category
-    if object_name not in self.cat2id:
-      new_words.append(object_name)
-      self.cat2id[object_name] = self.cat_id
-      self.categories.append({"supercategory": '', "id": self.cat_id, "name": object_name}) ### FIX SUPERCATEGORY
-      self.cat_id += 1
-    
     # load the corresponding image id for the `image_name`
     if image_name in self.image_name2id:
       curr_image_id = self.image_name2id[image_name]
@@ -139,46 +130,26 @@ class TITANDataset:
       print(f'{image_name} is not present in the loaded set of image info. Did you forget to run `load_image_name2id_dict`?')
       return
 
-    # word category id
-    word_cat_id = self.cat2id[object_name]
+    # If the object name is new then we add a new category
+    if object_name not in self.cat2id:
+      self.cat2id[object_name] = self.cat_id
+      self.categories.append({"supercategory": '', "id": self.cat_id, "name": object_name}) ### FIX SUPERCATEGORY
+      self.cat_id += 1
 
-    # Annotate the Word Heatmap for current word
-    anns = self.object_annotator.wordheatmap_to_annotations(
-      mask, self.annotation_id, curr_image_id, word_cat_id
-      )
+    if mask is not None:
+      # word category id
+      word_cat_id = self.cat2id[object_name]
 
-    # If no annotation detected for current word
-    if anns is None:
+      # Annotate the Word Heatmap for current word
+      anns = self.object_annotator.wordheatmap_to_annotations(
+        mask, self.annotation_id, curr_image_id, word_cat_id
+        )
 
-      # Undoing the changes in case we are unable to detect anything in the mask clearly
-      rmv_count = len(new_words)
+      # Update the annotations
+      self.annotations.extend(anns)
 
-      # Deleting the new word if any i.e. if object name was a new category
-      for del_word in new_words:
-        self.cat2id.pop(del_word, None)
-      
-      # Delete the new categories we added
-      for _ in range(rmv_count):
-        self.categories.pop()
-      
-      # Delete the image info
-      if len(self.images) > 0:
-        self.images.pop()
-
-      # Delete the caption for this image
-      if len(self.captions) > 0:
-        self.captions.pop()
-
-      # Fix category id
-      self.cat_id -= rmv_count
-      
-      return
-
-    # Update the annotations
-    self.annotations.extend(anns)
-
-    # Incrementent annotation id
-    self.annotation_id += len(anns)
+      # Incrementent annotation id
+      self.annotation_id += len(anns)
 
   def annotate(self, 
     image,
@@ -258,35 +229,35 @@ class TITANDataset:
         word_heatmap, self.annotation_id, self.image_id, word_cat_id
         )
 
-      # If no annotation detected for current word
-      if anns is None:
+      # # If no annotation detected for current word
+      # if anns is None:
 
-        # Undoing the changes in case we skip the prompt
-        # Observe if an exception happen then it can only happen in the Generate Global Word Attribution HeatMap Section
-        # Assuming that Stable Diffusion with output atleast something for each prompt
-        # So if an exception happens in the above mentioned section then by then we have appended some things which we undo below
-        rmv_count = len(new_words)
+      #   # Undoing the changes in case we skip the prompt
+      #   # Observe if an exception happen then it can only happen in the Generate Global Word Attribution HeatMap Section
+      #   # Assuming that Stable Diffusion with output atleast something for each prompt
+      #   # So if an exception happens in the above mentioned section then by then we have appended some things which we undo below
+      #   rmv_count = len(new_words)
 
-        # Deleting the new words which are detected on this prompt in case we deal with exception
-        for del_word in new_words:
-          self.cat2id.pop(del_word, None)
+      #   # Deleting the new words which are detected on this prompt in case we deal with exception
+      #   for del_word in new_words:
+      #     self.cat2id.pop(del_word, None)
         
-        # Delete the new categories we added
-        for _ in range(rmv_count):
-          self.categories.pop()
+      #   # Delete the new categories we added
+      #   for _ in range(rmv_count):
+      #     self.categories.pop()
         
-        # Delete the image generated
-        if len(self.images) > 0:
-          self.images.pop()
+      #   # Delete the image generated
+      #   if len(self.images) > 0:
+      #     self.images.pop()
 
-        # Delete the caption for this image
-        if len(self.captions) > 0:
-          self.captions.pop()
+      #   # Delete the caption for this image
+      #   if len(self.captions) > 0:
+      #     self.captions.pop()
 
-        # Fix category id
-        self.cat_id -= rmv_count
+      #   # Fix category id
+      #   self.cat_id -= rmv_count
         
-        return
+      #   return
 
       # Update the annotations
       self.annotations.extend(anns)
