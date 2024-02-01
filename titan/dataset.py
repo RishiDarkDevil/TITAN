@@ -83,11 +83,19 @@ class TITANDataset:
   
   def load_image_name2id_dict(self):
     """
-    Creates the image_name to id mapping given the `self.images`
+    Creates the image_name to id mapping given the `self.images`.
+    Put the image info in the self.images and then run this function.
     """
     for img in self.images:
       self.image_name2id[img['file_name']] = img['id']
     print('Created image file name to id mapping... Done')
+
+  def create_image_name2id_dict(self):
+    """
+    Creates the image_name to id mapping on its own if the user does not
+    want to provide it on his own. TODO
+    """
+    pass
 
   def annotate_mask(self, 
     mask,
@@ -111,8 +119,8 @@ class TITANDataset:
     # Check if the values of the mask are between 0 and 1.
     assert mask.max() <= 1.0
 
-    # Check if the image info and caption info is there or not
-    assert (len(self.images) > 0) and (len(self.captions) > 0)
+    # Check if the image name to id mapping is present or not
+    assert len(self.image_name2id) > 0
 
     # Stores the new objects found in this prompt
     new_words = list()
