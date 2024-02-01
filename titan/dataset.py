@@ -79,6 +79,101 @@ class TITANDataset:
     self.caption_id = 1 # Assigns captions caption ids
     self.save_idx = 1 # The index which stores how many times we saved the json file before
     self.object_annotator = ObjectAnnotator(**kwargs) # Annotates the WordHeatMaps
+  
+  def annotate_mask(self, 
+    mask,
+    image_name: str, 
+    object_name: str,
+    caption_prompt: str = '',
+    license = 1,
+    ):
+    """
+    Updates all the COCO components - when you pass a mask corresponding to the `image_name`, it annotates the mask
+    i.e. generates segmentation and bboxes and other fields.
+    mask: [np.array] the segmentation mask (should be of the same size as the `image_name`) - preferably a binary image, heatmap also works
+          The values of the mask should be between 0 to 1.
+    image_name: the name with which this image is saved along with extension
+    object_name: the object name for which the `mask` is given
+    caption_prompt: the caption corresponding to the `image_name` if any
+    """
+
+    # Check if the values of the mask are between 0 and 1.
+    assert mask.max() <= 1.0
+
+    # Stores the new objects found in this prompt
+    new_words = list()
+    
+    # If the object name is new then we add a new category
+    if object_name not in self.cat2id:
+      new_words.append(object_name)
+      self.cat2id[object_name] = self.cat_id
+      self.categories.append({"supercategory": '', "id": self.cat_id, "name": object_name}) ### FIX SUPERCATEGORY
+      self.cat_id += 1
+
+    # Image details
+    width, height = mask.shape
+    image_det = {
+        'license': license,
+        'file_name': f'{image_name}',
+        'height': height,
+        'width': width,
+        'date_captured': datetime.datetime.now().strftime("%m/%d/%Y, %H:%M:%S"),
+        'id': self.image_id
+    }
+    self.images.append(image_det)
+
+    # Captions details
+    cap_det = {
+        'id': self.caption_id,
+        'image_id': self.image_id,
+        'caption': caption_prompt
+    }
+    self.captions.append(cap_det)
+
+    # word category id
+    word_cat_id = self.cat2id[object_name]
+
+    # Annotate the Word Heatmap for current word
+    anns = self.object_annotator.wordheatmap_to_annotations(
+      mask, self.annotation_id, self.image_id, word_cat_id
+      )
+
+    # If no annotation detected for current word
+    if anns is None:
+
+      # Undoing the changes in case we are unable to detect anything in the mask clearly
+      rmv_count = len(new_words)
+
+      # Deleting the new word if any i.e. if object name was a new category
+      for del_word in new_words:
+        self.cat2id.pop(del_word, None)
+      
+      # Delete the new categories we added
+      for _ in range(rmv_count):
+        self.categories.pop()
+      
+      # Delete the image info
+      if len(self.images) > 0:
+        self.images.pop()
+
+      # Delete the caption for this image
+      if len(self.captions) > 0:
+        self.captions.pop()
+
+      # Fix category id
+      self.cat_id -= rmv_count
+      
+      return
+
+    # Update the annotations
+    self.annotations.extend(anns)
+
+    # Incrementent annotation id
+    self.annotation_id += len(anns)
+
+    # Increment image id and caption id
+    self.image_id += 1
+    self.caption_id += 1
 
   def annotate(self, 
     image,
@@ -89,7 +184,8 @@ class TITANDataset:
     image_global_heat_map = None
     ):
     """
-    Updates all the COCO components
+    Updates all the COCO components - Suited only when you are using DAAM or DAAM-I2I to annotate i.e. a fully
+    generative pipeline and annotations using Attention Heatmaps of the generative model.
     image: generated PIL image
     image_name: the name with which this image is saved along with extension
     global_heat_map: daam GlobalHeatMap

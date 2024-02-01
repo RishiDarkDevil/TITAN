@@ -226,7 +226,7 @@ class ObjectAnnotator:
     """
     TODO: Change the name at heatmap_to_annotations!
     
-    word_heatmap: word heatmap or simply heatmap as an array --> The heatmap pixels must be in 0 to 1 range
+    word_heatmap: word heatmap or simply heatmap as an array --> The heatmap pixels must be in 0 to 1 range (imp)
     image_id: if any (required for COCO dataset format) defaults to -1 meaning not provided
     word_cat_id: if any (the id of the current word) defaults to -1 meaning not provided
     use_nms: True by default, if False does not apply nms
