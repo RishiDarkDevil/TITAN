@@ -237,7 +237,8 @@ class TITANDataset:
     global_heat_map, 
     processed_prompt: Tuple[str, List[str], List[str]],
     license = 1,
-    image_global_heat_map = None
+    image_global_heat_map = None,
+    **kwargs
     ):
     """
     Updates all the COCO components - Suited only when you are using DAAM or DAAM-I2I to annotate i.e. a fully
@@ -247,7 +248,7 @@ class TITANDataset:
     image_name: the name with which this image is saved along with extension
     global_heat_map: daam GlobalHeatMap
     processed_prompt: A Tuple of (sentence, tokenized and cleaned sentence, objects)
-    image_global_heat_map: [Optional] daami2i GlobalHeatMap, if provided finds the DAAM-I2I guided heatmap
+    image_global_heat_map: [Optional] daami2i GlobalHeatMap, if provided finds the DAAM-I2I guided heatmap (instead of DAAM word heatmap)
     """
 
     # The generated image
@@ -308,7 +309,7 @@ class TITANDataset:
       # Annotate the Word Heatmap for current word
       try:
         anns = self.object_annotator.wordheatmap_to_annotations(
-          word_heatmap, self.annotation_id, self.image_id, word_cat_id
+          word_heatmap, self.annotation_id, self.image_id, word_cat_id, **kwargs
           )
       except Exception as e:
         print(f'The following error popped up while trying to annotate the word heatmap for {obj} in the image {image_name}:', e)

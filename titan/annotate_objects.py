@@ -221,8 +221,9 @@ class ObjectAnnotator:
     start_annotation_id: int = 1, 
     image_id: int = -1, 
     word_cat_id: int = -1, 
-    use_nms=True, 
-    skip_small_filters=False):
+    use_nms: bool = True, 
+    skip_small_filters: bool = False,
+    thresh: int = None):
     """
     TODO: Change the name at heatmap_to_annotations!
     
@@ -231,6 +232,8 @@ class ObjectAnnotator:
     word_cat_id: if any (the id of the current word) defaults to -1 meaning not provided
     use_nms: True by default, if False does not apply nms
     skip_small_filters: False by default, if True does not apply filtering of small bboxes or segments
+    thresh: None by default, if set to any number between 0 and 1, it applies that threshold to the `word_heatmap` 
+            to convert it into a binary mask.
     """
 
     # stores the annotations
@@ -244,7 +247,9 @@ class ObjectAnnotator:
     blurred_heatmap = cv2.GaussianBlur(heatmap, self.blur_kernel_size, 0)
 
     # Binary threshold of the above heatmap - serves as sort of semantic segmentation for the word
-    thresh = cv2.threshold(blurred_heatmap, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    thresh = cv2.threshold(
+      blurred_heatmap, 0, 255, 
+      cv2.THRESH_BINARY + cv2.THRESH_OTSU if thresh is None else thresh)[1]
 
     # Find contours from the binary threshold
     cnts = self.mask2polygon(thresh)
